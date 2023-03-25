@@ -19,12 +19,14 @@ class dns_server:
     self.server_socket.listen(5)
     self._connections = []
 
-    self.cheque_server = cheque_server(HOST_IP)
-    
-    self.cheque_server.run()
-    self.atm_server = atm_server(HOST_IP)
-    self.atm_server.run()
     print(f">> Central Server listeing @ PORT: {self.port}")
+    
+    self.cheque_server = cheque_server(HOST_IP)
+    cheque_thread = t.Thread(target=self.cheque_server.run)
+    cheque_thread.start()
+    self.atm_server = atm_server(HOST_IP)
+    atm_thread = t.Thread(target=self.atm_server.run)
+    atm_thread.start()
 
   def distributor(self, c, address):
     print('[!] Connection request from:', address)
@@ -55,7 +57,7 @@ class cheque_server:
     self.server_socket.bind((self.host_ip, self.port))
     self.server_socket.listen(5)
     self._connections = []
-    print(f">> Cash Server [1] listeing @ PORT: {self.port}")
+    print(f">> Cheque Server [1] listeing @ PORT: {self.port}")
 
   def claim(self, c, cheque:cheque):
     print("Waiting for amount: ")
