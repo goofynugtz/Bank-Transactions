@@ -4,7 +4,7 @@ class cheque:
     self.receiver = receiver
     self.amount = amount
     self.cheque_no = cheque_no
-    self.micr = micr
+    # self.micr = micr
     self.payer_ac = payer_ac
 
 class card:

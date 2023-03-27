@@ -1,6 +1,7 @@
-import socket as s, threading as t, json, sqlite3 as db, pickle
+import socket as s, threading as t, sqlite3 as db, pickle
 from data_types import *
 from transactions import *
+from utils import *
 
 DNS_PORT = 3000
 CHQ_PORT = 3001
@@ -19,8 +20,8 @@ class dns_server:
     self.server_socket.listen(5)
     self._connections = []
 
-    print(f">> Central Server listeing @ PORT: {self.port}")
-    
+    print(f"[DNS] >> Central Server listeing @ PORT: {self.port}")
+
     self.cheque_server = cheque_server(HOST_IP)
     cheque_thread = t.Thread(target=self.cheque_server.run)
     cheque_thread.start()
@@ -29,13 +30,13 @@ class dns_server:
     atm_thread.start()
 
   def distributor(self, c, address):
-    print('[!] Connection request from:', address)
+    print('[DNS] [!] Connection request from:', address)
     connected = True
     while connected:
       client_response = c.recv(1024).decode("utf-8")
-      print("Client Reponse:", client_response)
+      print("[DNS] Client Reponse:", client_response)
       if (client_response == '1'):
-        pass # to cheque_handler
+        
       if (client_response == '2'):
         pass # to atm_handler
 
@@ -45,8 +46,7 @@ class dns_server:
       self.connections.append(c)
       thread = t.Thread(target=self.distributor, args=[c,address])
       thread.start()
-      print(f"[Active connections to DNS] : {t.active_count()-1}")
-
+      print(f"[DNS] [Active connections] : {t.active_count()-1}")
 
 
 class cheque_server:
@@ -57,22 +57,34 @@ class cheque_server:
     self.server_socket.bind((self.host_ip, self.port))
     self.server_socket.listen(5)
     self._connections = []
-    print(f">> Cheque Server [1] listeing @ PORT: {self.port}")
+    print(f"[CHQ] >> Server [1] listeing @ PORT: {self.port}")
+
+  def issue(self, c, cheque:cheque):
+    if (chequeIsValid(cheque)):
+      issueCheque(cursor, cheque.amount, cheque.payer_ac)
+      db_connection.commit()
 
   def claim(self, c, cheque:cheque):
-    print("Waiting for amount: ")
-    amount = c.recv(1024).decode('utf-8')
-    withdraw(cursor, cheque.payer_ac, amount)
-    deposit(cursor, cheque.receiver, amount)
+    if (chequeIsValid(cheque)):
+      withdraw(cursor, cheque.payer_ac, cheque.amount)
+      deposit(cursor, cheque.receiver, cheque.amount)
+      db_connection.commit()
 
   def run(self):
     while True:
       c, _ = self.server_socket.accept()
       self.connections.append(c)
-      data = c.recv(1024)
-      cheque = pickle.loads(data)
-      thread = t.Thread(target=self.claim, args=[c,cheque])
-      thread.start()
+      option = c.recv(1024).decode()
+      if (option == "1"):
+        cheque_dump = c.recv(1024)
+        cheque = pickle.loads(cheque_dump)
+        thread = t.Thread(target=self.issue, args=[c,cheque])
+        thread.start()
+      elif (option == "2"):
+        cheque_dump = c.recv(1024)
+        cheque = pickle.loads(cheque_dump)
+        thread = t.Thread(target=self.claim, args=[c,cheque])
+        thread.start()
 
 
 class atm_server:
@@ -83,11 +95,26 @@ class atm_server:
     self.server_socket.bind((self.host_ip, self.port))
     self.server_socket.listen(5)
     self._connections = []
-    print(f">> ATM Server [1] listeing @ PORT: {self.port}")
+    print(f"[ATM] >> Server [1] listeing @ PORT: {self.port}")
+
+  def withdrawAmount(self, c, card:card):
+    if (cardIsValid(card)):
+      amount = c.recv(1024)
+      account_no = getAccountNumber(card)
+      c.send("Processing Trasaction...".encode())
+      withdraw(cursor, account_no, amount)
+      db_connection.commit()
+      balance = getAccountBalance(account_no)
+      c.send(f"Balance Left: {balance}".encode())
 
   def run(self):
-    pass
-
+    while True:
+      c, _ = self.server_socket.accept()
+      self.connections.append(c)
+      card_dump = c.recv(1024)
+      card = pickle.loads(card_dump)
+      thread = t.Thread(target=self.withdrawAmount, args=[c,card])
+      thread.start()
 
 
 if __name__ == "__main__":
