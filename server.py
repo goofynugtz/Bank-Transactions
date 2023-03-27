@@ -3,16 +3,14 @@ from data_types import *
 from transactions import *
 from utils import *
 
-DNS_PORT = 3000
+CEN_PORT = 3000
 CHQ_PORT = 3001
 ATM_PORT = 3002
 
 HOST_IP = '127.0.0.1'
-db_connection = db.connect("data.db")
-cursor = db_connection.cursor()
 
-class dns_server:
-  def __init__(self, host_ip=HOST_IP, port=DNS_PORT):
+class central_server:
+  def __init__(self, host_ip=HOST_IP, port=CEN_PORT):
     self.host_ip = host_ip
     self.port = port
     self.server_socket = s.socket(s.AF_INET,s.SOCK_STREAM)
@@ -20,7 +18,7 @@ class dns_server:
     self.server_socket.listen(5)
     self._connections = []
 
-    print(f"[DNS] >> Central Server listeing @ PORT: {self.port}")
+    print(f"[CEN] >> Central Server listeing @ PORT: {self.port}")
 
     self.cheque_server = cheque_server(HOST_IP)
     cheque_thread = t.Thread(target=self.cheque_server.run)
@@ -30,15 +28,15 @@ class dns_server:
     atm_thread.start()
 
   def distributor(self, c, address):
-    print('[DNS] [!] Connection request from:', address)
+    print('[CEN] [!] Connection request from:', address)
     connected = True
     while connected:
       client_response = c.recv(1024).decode("utf-8")
-      print("[DNS] Client Reponse:", client_response)
+      print("[CEN] Client Reponse:", client_response)
       if (client_response == '1'):
-        
+        c.send(f'{CHQ_PORT}'.encode());
       if (client_response == '2'):
-        pass # to atm_handler
+        c.send(f'{ATM_PORT}'.encode());
 
   def run(self):
     while True:
@@ -46,7 +44,7 @@ class dns_server:
       self.connections.append(c)
       thread = t.Thread(target=self.distributor, args=[c,address])
       thread.start()
-      print(f"[DNS] [Active connections] : {t.active_count()-1}")
+      print(f"[CEN] [Active connections] : {t.active_count()-1}")
 
 
 class cheque_server:
@@ -60,12 +58,12 @@ class cheque_server:
     print(f"[CHQ] >> Server [1] listeing @ PORT: {self.port}")
 
   def issue(self, c, cheque:cheque):
-    if (chequeIsValid(cheque)):
+    if (validateCheque(cheque)):
       issueCheque(cursor, cheque.amount, cheque.payer_ac)
       db_connection.commit()
 
   def claim(self, c, cheque:cheque):
-    if (chequeIsValid(cheque)):
+    if (validateCheque(cheque)):
       withdraw(cursor, cheque.payer_ac, cheque.amount)
       deposit(cursor, cheque.receiver, cheque.amount)
       db_connection.commit()
@@ -98,7 +96,7 @@ class atm_server:
     print(f"[ATM] >> Server [1] listeing @ PORT: {self.port}")
 
   def withdrawAmount(self, c, card:card):
-    if (cardIsValid(card)):
+    if (validateCard(card)):
       amount = c.recv(1024)
       account_no = getAccountNumber(card)
       c.send("Processing Trasaction...".encode())
@@ -118,5 +116,5 @@ class atm_server:
 
 
 if __name__ == "__main__":
-  server = dns_server(HOST_IP, DNS_PORT)
+  server = central_server(HOST_IP, CEN_PORT)
   server.run()
