@@ -23,5 +23,5 @@ for i in range(len(account_number)):
   insertInCardsTable(account_number[i][0])
   db_connection.commit()
 
-createChequeTable()
+createChequesIssuedTable()
 db_connection.commit()

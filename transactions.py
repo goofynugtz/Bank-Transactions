@@ -38,7 +38,7 @@ def insertInCardsTable(accountNo):
   """
   cursor.execute(sql)
 
-def createChequeTable():
+def createChequesIssuedTable():
   sql = f"""
     CREATE TABLE cheque_issued(
     AccountNo varchar(11),
