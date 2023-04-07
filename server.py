@@ -29,16 +29,16 @@ class central_server:
 
   def distributor(self, c, address):
     print('[CEN] [!] Connection request from:', address)
-    connected = True
-    while connected:
-      client_response = c.recv(1024).decode("utf-8")
-      print("[CEN] Client Reponse:", client_response)
-      if (client_response == '1'):
-        c.send(f'{CHQ_PORT}'.encode());
-      if (client_response == '2'):
-        c.send(f'{ATM_PORT}'.encode());
-      connected = False
-      c.close()
+    # connected = True
+    # while connected:
+    client_response = c.recv(1024).decode("utf-8")
+    # print("[CEN] Client Reponse:", client_response)
+    if (client_response == '1'):
+      c.send(f'{CHQ_PORT}'.encode());
+    if (client_response == '2'):
+      c.send(f'{ATM_PORT}'.encode());
+    # connected = False
+    c.close()
 
   def run(self):
     while True:
@@ -46,7 +46,7 @@ class central_server:
       self._connections.append(c)
       thread = t.Thread(target=self.distributor, args=[c,address])
       thread.start()
-      print(f"[CEN] [Active connections] : {t.active_count()-1}")
+      # print(f"[CEN] [Active connections] : {t.active_count()-1}")
 
 
 class cheque_server:
