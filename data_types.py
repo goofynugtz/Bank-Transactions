@@ -1,6 +1,6 @@
 class cheque:
-  def __init__(self, amount, payer_ac):
-    # self.receiver = receiver
+  def __init__(self, cheque_no, amount, payer_ac):
+    self.cheque_no = cheque_no
     self.amount = amount
     self.payer_ac = payer_ac
 

@@ -51,13 +51,21 @@ def createChequesIssuedTable():
   cursor.execute(sql)
 
 
-def issueCheque(amount, payer_ac):
-  chequeNumber = generateRandomNumberOfSize(6);
+def issueCheque(cheque_no, amount, payer_ac):
   sql = f"""
-    INSERT INTO cheques_issued VALUES ("{payer_ac}","{chequeNumber}",{amount},"07-04-2023");
+    INSERT INTO cheques_issued VALUES ("{payer_ac}","{cheque_no}",{amount},"07-04-2023");
   """
   cursor.execute(sql)
-  return chequeNumber
+
+
+def withdrawCheque(account_no, cheque_no):
+  sql = f"""
+    DELETE FROM cheques_issued 
+    WHERE AccountNo="{account_no}" AND ChequeNo="{cheque_no}";
+  """
+  cursor.execute(sql)
+  data = cursor.fetchall()
+  print(data)
 
 
 def withdraw(account_no, amount):

@@ -29,15 +29,11 @@ class central_server:
 
   def distributor(self, c, address):
     print('[CEN] [!] Connection request from:', address)
-    # connected = True
-    # while connected:
     client_response = c.recv(1024).decode("utf-8")
-    # print("[CEN] Client Reponse:", client_response)
     if (client_response == '1'):
       c.send(f'{CHQ_PORT}'.encode());
     if (client_response == '2'):
       c.send(f'{ATM_PORT}'.encode());
-    # connected = False
     c.close()
 
   def run(self):
@@ -46,7 +42,6 @@ class central_server:
       self._connections.append(c)
       thread = t.Thread(target=self.distributor, args=[c,address])
       thread.start()
-      # print(f"[CEN] [Active connections] : {t.active_count()-1}")
 
 
 class cheque_server:
@@ -62,15 +57,15 @@ class cheque_server:
   def issue(self, c, cheque:cheque):
     print("Cheque Issue")
     if (validateAccountNumber(cheque)):
-      cheque_no = issueCheque(cheque.amount, cheque.payer_ac)
+      issueCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, payer_ac=cheque.payer_ac)
       db_connection.commit()
-      c.send(f'{cheque_no}'.encode())
+      c.send(f'{cheque.cheque_no}'.encode())
 
 
   def claim(self, c, cheque:cheque):
     print("Cheque Claim")
     if (validateCheque(cheque)):
-      withdraw(cheque.payer_ac, cheque.amount)
+      withdrawCheque(cheque.payer_ac, cheque.cheque_no)
       # deposit(cheque.receiver, cheque.amount)
       db_connection.commit()
       c.send(f'>> Cheque Claimed. Withdrawn amount {cheque.amount}.'.encode())
@@ -86,13 +81,9 @@ class cheque_server:
       cheque_dump = c.recv(1024)
       cheque = pickle.loads(cheque_dump)
       if (option == "1"):
-        print("O1")
         thread = t.Thread(target=self.issue, args=[c,cheque])
         thread.start()
       elif (option == "2"):
-        print("O2")
-        # cheque_dump = c.recv(1024)
-        # cheque = pickle.loads(cheque_dump)
         thread = t.Thread(target=self.claim, args=[c,cheque])
         thread.start()
 

@@ -15,8 +15,14 @@ def validateAccountNumber(cheque: cheque):
   data = cursor.fetchall()
   return len(data) == 1;
 
+
 def validateCheque(cheque: cheque):
-  cursor.execute(f"SELECT * from cheques_issued WHERE AccountNo='{cheque.payer_ac}' AND Amount={cheque.amount}")
+  cursor.execute(f"""
+    SELECT * from cheques_issued 
+    WHERE AccountNo='{cheque.payer_ac}' 
+    AND Amount={cheque.amount} 
+    AND ChequeNo='{cheque.cheque_no}'
+  """)
   data = cursor.fetchall()
   return len(data) == 1;
 
