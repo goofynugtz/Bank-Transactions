@@ -18,7 +18,7 @@ class central_server:
     self.server_socket.bind((self.host_ip, self.port))
     self.server_socket.listen(5)
     self._connections = []
-    print(f"[CEN] >> Central Server listeing @ PORT: {self.port}")
+    print(f"[CEN] >> Central Server listening @ PORT: {self.port}")
     self.cheque_server = cheque_server(HOST_IP)
     cheque_thread = t.Thread(target=self.cheque_server.run)
     cheque_thread.start()
@@ -58,7 +58,7 @@ class cheque_server:
     self.server_socket.bind((self.host_ip, self.port))
     self.server_socket.listen(5)
     self._connections = []
-    print(f"[CHQ] >> Server [1] listeing @ PORT: {self.port}")
+    print(f"[CHQ] >> Server [1] listening @ PORT: {self.port}")
 
   def issue(self, c, cheque:cheque):
     if (validateAccountNumber(cheque.payer_ac)):
@@ -66,10 +66,13 @@ class cheque_server:
       c.send(f'{cheque.cheque_no}'.encode())
 
   def claim(self, c, cheque:cheque):
+    
     if (validateCheque(cheque)):
-      withdrawCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, account_no=cheque.payer_ac)
-      # deposit(cheque.receiver, cheque.amount)
-      c.send(f'>> Cheque Claimed. Withdrawn amount {cheque.amount}.'.encode())
+      if (validateTransactionAmount(cheque.payer_ac,cheque.amount)):
+        withdrawCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, account_no=cheque.payer_ac)
+        c.send(f'>> Cheque Claimed. Withdrawn amount {cheque.amount}.'.encode())
+      else:
+        c.send(f'[!] Cheque Bounced.'.encode())
     else:
       c.send(f'[!] Invalid Cheque.'.encode())
 
@@ -96,7 +99,7 @@ class atm_server:
     self.server_socket.bind((self.host_ip, self.port))
     self.server_socket.listen(5)
     self._connections = []
-    print(f"[ATM] >> Server [1] listeing @ PORT: {self.port}")
+    print(f"[ATM] >> Server [1] listening @ PORT: {self.port}")
 
   def withdrawAmount(self, c):
     card_dump = c.recv(1024)
@@ -106,8 +109,12 @@ class atm_server:
       c.send("0".encode())
       amount = c.recv(1024).decode("utf-8")
       account_no = getAccountNumber(card)
-      c.send(">> Processing Trasaction...".encode())
-      withdraw(account_no, amount)
+      if (validateTransactionAmount(account_no,amount)):
+        c.send(">> Processing Transaction...".encode())
+        withdraw(account_no, amount)
+      else:
+        c.send("[!] Insufficient Balance".encode())
+      
       balance = getAccountBalance(account_no)
       c.send(f"Balance Left: {balance}".encode())
     else:
@@ -129,7 +136,7 @@ class cash_deposit_server:
     self.server_socket.bind((self.host_ip, self.port))
     self.server_socket.listen(5)
     self._connections = []
-    print(f"[CSD] >> Server [1] listeing @ PORT: {self.port}")
+    print(f"[CSD] >> Server [1] listening @ PORT: {self.port}")
 
   def depositAmount(self, c, slip:slip):
     if (validateAccountNumber(slip.account_no)):

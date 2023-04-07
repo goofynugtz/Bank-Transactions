@@ -39,8 +39,7 @@ def getAccountBalance(account_no):
   data = cursor.fetchall()
   return data[0][0]
 
-def validateTransactionAmt(account_no,amount):
+def validateTransactionAmount(account_no,amount):
   cursor.execute(f"SELECT balance from accounts WHERE AccountNo='{account_no}'")
-  balance = cursor.fetchall()
-  balance = float(balance[0][0])
-  return balance >= amount
+  balance = cursor.fetchall()[0][0]
+  return float(balance) >= float(amount)
