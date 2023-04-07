@@ -26,6 +26,9 @@ class central_server:
     self.atm_server = atm_server(HOST_IP)
     atm_thread = t.Thread(target=self.atm_server.run)
     atm_thread.start()
+    self.cash_deposit_server = cash_deposit_server(HOST_IP)
+    cash_deposit_thread = t.Thread(target=self.cash_deposit_server.run)
+    cash_deposit_thread.start()
 
   def distributor(self, c, address):
     print('[CEN] [!] Connection request from:', address)
@@ -65,7 +68,7 @@ class cheque_server:
   def claim(self, c, cheque:cheque):
     print("Cheque Claim")
     if (validateCheque(cheque)):
-      withdrawCheque(cheque.payer_ac, cheque.cheque_no)
+      withdrawCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, account_no=cheque.payer_ac)
       # deposit(cheque.receiver, cheque.amount)
       db_connection.commit()
       c.send(f'>> Cheque Claimed. Withdrawn amount {cheque.amount}.'.encode())
@@ -100,7 +103,7 @@ class atm_server:
 
   def withdrawAmount(self, c, card:card):
     if (validateCard(card)):
-      amount = c.recv(1024)
+      amount = c.recv(1024).decode("utf-8")
       account_no = getAccountNumber(card)
       c.send("Processing Trasaction...".encode())
       withdraw(account_no, amount)

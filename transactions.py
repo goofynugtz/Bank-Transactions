@@ -58,14 +58,13 @@ def issueCheque(cheque_no, amount, payer_ac):
   cursor.execute(sql)
 
 
-def withdrawCheque(account_no, cheque_no):
+def withdrawCheque(cheque_no, amount, account_no):
   sql = f"""
     DELETE FROM cheques_issued 
     WHERE AccountNo="{account_no}" AND ChequeNo="{cheque_no}";
   """
   cursor.execute(sql)
-  data = cursor.fetchall()
-  print(data)
+  withdraw(account_no, amount)
 
 
 def withdraw(account_no, amount):

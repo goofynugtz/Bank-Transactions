@@ -5,16 +5,30 @@ from utils import *
 HOST_IP = '127.0.0.1'
 PORT = 3000
 ACCOUNT_NO = 81971036696
+CARD_NO = 5718189065467582
 ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
+CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
+
+# ACCOUNT_NO = 94895520119
+# CARD_NO = 9935003427042575
+# ACCOUNTHOLDERS_NAME = "Rodolfo Ritter"
+# CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
 
 class client:
-  def __init__(self, host_ip=HOST_IP, port=PORT, accountNumber=ACCOUNT_NO, accountHoldersName=ACCOUNTHOLDERS_NAME):
+  def __init__(
+      self, host_ip=HOST_IP, 
+      port=PORT, 
+      accountNumber=ACCOUNT_NO, 
+      accountHoldersName=ACCOUNTHOLDERS_NAME,
+      card=CARD_1
+    ):
     self.host_ip = host_ip
     self.port = port
     self.server_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
     self.server_socket.connect((self.host_ip, self.port))
     self.accountNumber = accountNumber
     self.accountHoldersName = accountHoldersName
+    self.card = card
     self.ref_port = None
 
   def run(self):
@@ -28,7 +42,8 @@ class client:
     if (user_input == "2"):
       self.atm_client()
     print("Exiting.")
-      
+
+
   def cheque_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
     self._private_socket.connect((self.host_ip, self.ref_port))
@@ -57,8 +72,18 @@ class client:
       print(self._private_socket.recv(1024).decode('utf-8'))
     # self._private_socket.close()
     
+  def atm_client(self):
+    self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
+    self._private_socket.connect((self.host_ip, self.ref_port))
+    card_dump = pickle.dumps(self.card)
+    self._private_socket.send(card_dump)
+    c_amount = input("Amount: ")
+    self._private_socket.send(f'{c_amount}'.encode())
+    print(self._private_socket.recv(1024).decode('utf-8'))
+    print(self._private_socket.recv(1024).decode('utf-8'))
+
 
 
 if __name__ == "__main__":
-  client = client(HOST_IP, PORT, ACCOUNT_NO, ACCOUNTHOLDERS_NAME)
+  client = client(HOST_IP, PORT, ACCOUNT_NO, ACCOUNTHOLDERS_NAME, CARD_1)
   client.run()
