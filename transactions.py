@@ -1,4 +1,5 @@
 from utils import *
+import hashlib
 
 def createAccountsTable():
   sql = f"""
@@ -26,17 +27,19 @@ def createCardsTable():
   sql = f"""
     CREATE TABLE cards(CardNo varchar(16) PRIMARY KEY, 
     AccountNo varchar(11), 
+    Pin varchar(1000),
     FOREIGN KEY (AccountNo) REFERENCES accounts(AccountNo));
   """
   cursor.execute(sql)
 
 
-def insertInCardsTable(accountNo):
+def insertInCardsTable(accountNo, pin):
   card_number = generateRandomNumberOfSize(16)
   sql = f"""
-    INSERT INTO cards VALUES ("{card_number}", "{accountNo}")
+    INSERT INTO cards VALUES ("{card_number}", "{accountNo}", "{hashlib.sha256(pin.encode('utf-8')).hexdigest()}")
   """
   cursor.execute(sql)
+
 
 def createChequesIssuedTable():
   sql = f"""
