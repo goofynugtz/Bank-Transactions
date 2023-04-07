@@ -8,7 +8,6 @@ gender = ["M", "F", "M", "M", "M"]
 
 
 for i in zip(names, address, gender):
-  # print(i)
   insertInAccountsTable(i[0], i[1], i[2])
   db_connection.commit()
 
