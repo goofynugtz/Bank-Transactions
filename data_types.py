@@ -9,3 +9,7 @@ class card:
     self.card_no = card_no
     self.cardholders_name = cardholders_name
 
+class slip:
+  def __init__(self, account_no, amount):
+    self.account_no = account_no
+    self.amount = amount

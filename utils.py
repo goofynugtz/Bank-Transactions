@@ -10,8 +10,8 @@ def generateRandomNumberOfSize(n):
   return str(random.randint(_min, _max))
 
 
-def validateAccountNumber(cheque: cheque):
-  cursor.execute(f"SELECT AccountNo from accounts WHERE AccountNo='{cheque.payer_ac}'")
+def validateAccountNumber(account_no):
+  cursor.execute(f"SELECT AccountNo from accounts WHERE AccountNo='{account_no}'")
   data = cursor.fetchall()
   return len(data) == 1
 
