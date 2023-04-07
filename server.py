@@ -65,14 +65,17 @@ class cheque_server:
       issueCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, payer_ac=cheque.payer_ac)
       c.send(f'{cheque.cheque_no}'.encode())
 
-  def claim(self, c, cheque:cheque):
-    
+  def claim(self, c, cheque:cheque, payee_ac):
     if (validateCheque(cheque)):
-      if (validateTransactionAmount(cheque.payer_ac,cheque.amount)):
-        withdrawCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, account_no=cheque.payer_ac)
-        c.send(f'>> Cheque Claimed. Withdrawn amount {cheque.amount}.'.encode())
+      if(validateAccountNumber(payee_ac)):
+        if (validateTransactionAmount(cheque.payer_ac,cheque.amount)):
+          withdrawCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, account_no=cheque.payer_ac)
+          deposit(payee_ac,cheque.amount)
+          c.send(f'>> Cheque Claimed. Transferred amount {cheque.amount}.'.encode())
+        else:
+          c.send(f'[!] Cheque Bounced.'.encode())
       else:
-        c.send(f'[!] Cheque Bounced.'.encode())
+        c.send(f'[!] Invalid Payee A/C Number.'.encode())
     else:
       c.send(f'[!] Invalid Cheque.'.encode())
 
@@ -87,7 +90,8 @@ class cheque_server:
         thread = t.Thread(target=self.issue, args=[c,cheque])
         thread.start()
       elif (option == "2"):
-        thread = t.Thread(target=self.claim, args=[c,cheque])
+        payee_ac = c.recv(1024).decode()
+        thread = t.Thread(target=self.claim, args=[c,cheque, payee_ac])
         thread.start()
 
 

@@ -5,15 +5,15 @@ from utils import *
 
 HOST_IP = '127.0.0.1'
 PORT = 3000
-ACCOUNT_NO = 16070322068
-CARD_NO = 2677489830294190
-ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
-CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
-
-# ACCOUNT_NO = 94895520119
-# CARD_NO = 9935003427042575
-# ACCOUNTHOLDERS_NAME = "Rodolfo Ritter"
+# ACCOUNT_NO = 16070322068
+# CARD_NO = 2677489830294190
+# ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
 # CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
+
+ACCOUNT_NO = 27030146932
+CARD_NO = 6925424292792355
+ACCOUNTHOLDERS_NAME = "Rodolfo Ritter"
+CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
 
 class client:
   def __init__(
@@ -70,6 +70,7 @@ class client:
       cheque_dump = pickle.dumps(chq)
       self._private_socket.send(user_input.encode())
       self._private_socket.send(cheque_dump)
+      self._private_socket.send(f'{self.accountNumber}'.encode())
       print(self._private_socket.recv(1024).decode('utf-8'))
 
   def atm_client(self):
