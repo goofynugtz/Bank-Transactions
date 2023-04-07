@@ -54,6 +54,7 @@ class client:
       c_amount = input("Amount:")
       chq = cheque(c_amount, c_payer_ac)
       cheque_dump = pickle.dumps(chq)
+      self.server_socket.send(user_input.encode())
       self.server_socket.send(cheque_dump)
     # self.server_socket.close()
     
