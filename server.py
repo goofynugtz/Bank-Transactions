@@ -62,6 +62,7 @@ class cheque_server:
     print("Cheque Issue")
     if (validateAccountNumber(cheque.payer_ac)):
       issueCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, payer_ac=cheque.payer_ac)
+      print('issued')
       c.send(f'{cheque.cheque_no}'.encode())
 
   def claim(self, c, cheque:cheque):
