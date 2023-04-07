@@ -40,10 +40,11 @@ def insertInCardsTable(accountNo):
 
 def createChequesIssuedTable():
   sql = f"""
-    CREATE TABLE cheque_issued(
-    AccountNo varchar(11),
-    ChequeNo varchar(6),
-    Date date DEFAULT (CURRENT_DATE), Amount int,
+    CREATE TABLE cheques_issued(
+    AccountNo varchar(11) NOT NULL,
+    ChequeNo varchar(6) NOT NULL,
+    Amount int NOT NULL,
+    Date date DEFAULT (CURRENT_DATE), 
     PRIMARY KEY(AccountNo, ChequeNo),
     FOREIGN KEY (AccountNo) REFERENCES accounts(AccountNo));
   """
@@ -53,9 +54,10 @@ def createChequesIssuedTable():
 def issueCheque(amount, payer_ac):
   chequeNumber = generateRandomNumberOfSize(6);
   sql = f"""
-    INSERT INTO cheques_issued VALUES ("{payer_ac}","{chequeNumber}",{amount});
+    INSERT INTO cheques_issued VALUES ("{payer_ac}","{chequeNumber}",{amount},"07-04-2023");
   """
   cursor.execute(sql)
+  return chequeNumber
 
 
 def withdraw(account_no, amount):
@@ -75,10 +77,3 @@ def deposit(account_no, amount):
   """
   cursor.execute(sql)
 
-
-def issueCheque(amount, payer_ac):
-  chequeNumber = generateRandomNumberOfSize(6);
-  sql = f"""
-    INSERT INTO cheques_issued VALUES ("{payer_ac}","{chequeNumber}",{amount});
-  """
-  cursor.execute(sql)

@@ -37,11 +37,13 @@ class central_server:
         c.send(f'{CHQ_PORT}'.encode());
       if (client_response == '2'):
         c.send(f'{ATM_PORT}'.encode());
+      connected = False
+      c.close()
 
   def run(self):
     while True:
       c, address = self.server_socket.accept()
-      self.connections.append(c)
+      self._connections.append(c)
       thread = t.Thread(target=self.distributor, args=[c,address])
       thread.start()
       print(f"[CEN] [Active connections] : {t.active_count()-1}")
@@ -58,29 +60,36 @@ class cheque_server:
     print(f"[CHQ] >> Server [1] listeing @ PORT: {self.port}")
 
   def issue(self, c, cheque:cheque):
-    if (validateCheque(cheque)):
-      issueCheque(cursor, cheque.amount, cheque.payer_ac)
+    print("Cheque Issue")
+    if (validateAccountNumber(cheque)):
+      cheque_no = issueCheque(cheque.amount, cheque.payer_ac)
       db_connection.commit()
+      c.send(f'{cheque_no}'.encode())
+
 
   def claim(self, c, cheque:cheque):
+    print("Cheque Claim")
     if (validateCheque(cheque)):
-      withdraw(cursor, cheque.payer_ac, cheque.amount)
-      deposit(cursor, cheque.receiver, cheque.amount)
+      withdraw(cheque.payer_ac, cheque.amount)
+      # deposit(cheque.receiver, cheque.amount)
       db_connection.commit()
 
   def run(self):
     while True:
       c, _ = self.server_socket.accept()
-      self.connections.append(c)
+      self._connections.append(c)
       option = c.recv(1024).decode()
+      print(f"Option: {option}")
+      cheque_dump = c.recv(1024)
+      cheque = pickle.loads(cheque_dump)
       if (option == "1"):
-        cheque_dump = c.recv(1024)
-        cheque = pickle.loads(cheque_dump)
+        print("O1")
         thread = t.Thread(target=self.issue, args=[c,cheque])
         thread.start()
       elif (option == "2"):
-        cheque_dump = c.recv(1024)
-        cheque = pickle.loads(cheque_dump)
+        print("O2")
+        # cheque_dump = c.recv(1024)
+        # cheque = pickle.loads(cheque_dump)
         thread = t.Thread(target=self.claim, args=[c,cheque])
         thread.start()
 
@@ -100,7 +109,7 @@ class atm_server:
       amount = c.recv(1024)
       account_no = getAccountNumber(card)
       c.send("Processing Trasaction...".encode())
-      withdraw(cursor, account_no, amount)
+      withdraw(account_no, amount)
       db_connection.commit()
       balance = getAccountBalance(account_no)
       c.send(f"Balance Left: {balance}".encode())
@@ -108,7 +117,7 @@ class atm_server:
   def run(self):
     while True:
       c, _ = self.server_socket.accept()
-      self.connections.append(c)
+      self._connections.append(c)
       card_dump = c.recv(1024)
       card = pickle.loads(card_dump)
       thread = t.Thread(target=self.withdrawAmount, args=[c,card])

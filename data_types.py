@@ -1,10 +1,7 @@
 class cheque:
-  def __init__(self, date, receiver, amount, cheque_no, micr, payer_ac):
-    self.date = date
-    self.receiver = receiver
+  def __init__(self, amount, payer_ac):
+    # self.receiver = receiver
     self.amount = amount
-    self.cheque_no = cheque_no
-    # self.micr = micr
     self.payer_ac = payer_ac
 
 class card:
