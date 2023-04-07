@@ -12,7 +12,6 @@ def createAccountsTable():
   """
   cursor.execute(sql)
   db_connection.commit()
-  
 
 def insertInAccountsTable(name, address, gender):
   balance = 10000
@@ -23,7 +22,6 @@ def insertInAccountsTable(name, address, gender):
   """
   cursor.execute(sql)
   db_connection.commit()
-
 
 def createCardsTable():
   sql = f"""
@@ -42,8 +40,6 @@ def insertInCardsTable(accountNo, pin):
   """
   cursor.execute(sql)
   db_connection.commit()
-
-
 
 def createChequesIssuedTable():
   sql = f"""
@@ -73,7 +69,6 @@ def withdrawCheque(cheque_no, amount, account_no):
   cursor.execute(sql)
   db_connection.commit()
   withdraw(account_no, amount)
-
 
 def withdraw(account_no, amount):
   sql = f"""

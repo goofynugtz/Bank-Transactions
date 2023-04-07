@@ -1,5 +1,5 @@
 import socket as s, threading as t, sqlite3 as db, pickle
-from data_types import *
+from models import *
 from transactions import *
 from utils import *
 
@@ -18,18 +18,16 @@ class central_server:
     self.server_socket.bind((self.host_ip, self.port))
     self.server_socket.listen(5)
     self._connections = []
-
     print(f"[CEN] >> Central Server listeing @ PORT: {self.port}")
-
     self.cheque_server = cheque_server(HOST_IP)
     cheque_thread = t.Thread(target=self.cheque_server.run)
     cheque_thread.start()
     self.atm_server = atm_server(HOST_IP)
     atm_thread = t.Thread(target=self.atm_server.run)
     atm_thread.start()
-    # self.cash_deposit_server = cash_deposit_server(HOST_IP)
-    # cash_deposit_thread = t.Thread(target=self.cash_deposit_server.run)
-    # cash_deposit_thread.start()
+    self.cash_deposit_server = cash_deposit_server(HOST_IP)
+    cash_deposit_thread = t.Thread(target=self.cash_deposit_server.run)
+    cash_deposit_thread.start()
 
   def distributor(self, c, address):
     print('[CEN] [!] Connection request from:', address)
@@ -62,10 +60,9 @@ class cheque_server:
 
   def issue(self, c, cheque:cheque):
     print("Cheque Issue")
-    if (validateAccountNumber(cheque)):
+    if (validateAccountNumber(cheque.payer_ac)):
       issueCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, payer_ac=cheque.payer_ac)
       c.send(f'{cheque.cheque_no}'.encode())
-
 
   def claim(self, c, cheque:cheque):
     print("Cheque Claim")
@@ -105,7 +102,7 @@ class atm_server:
   def withdrawAmount(self, c):
     card_dump = c.recv(1024)
     card = pickle.loads(card_dump)
-    pin = c.recv(1024).decode() # TODO:
+    pin = c.recv(1024).decode()
     print(card.card_no, pin)
     if (validateCard(card, pin)):
       c.send("0".encode())

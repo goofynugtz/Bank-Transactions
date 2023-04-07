@@ -1,13 +1,13 @@
 import hashlib
 import socket as s, pickle
-from data_types import *
+from models import *
 from utils import *
 
 HOST_IP = '127.0.0.1'
 PORT = 3000
-ACCOUNT_NO = 53746709072
-CARD_NO = 2013181047073319
-ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
+ACCOUNT_NO = 89671910745
+CARD_NO = 6773823143790094
+ACCOUNTHOLDERS_NAME = "Philip Rodgers"
 CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
 
 # ACCOUNT_NO = 94895520119
@@ -46,7 +46,6 @@ class client:
       self.cash_deposit_client()
     print("Exiting.")
 
-
   def cheque_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
     self._private_socket.connect((self.host_ip, self.ref_port))
@@ -74,7 +73,7 @@ class client:
       self._private_socket.send(cheque_dump)
       print(self._private_socket.recv(1024).decode('utf-8'))
     # self._private_socket.close()
-    
+
   def atm_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
     self._private_socket.connect((self.host_ip, self.ref_port))
@@ -84,17 +83,18 @@ class client:
     pin = hashlib.sha256(pin.encode('utf-8')).hexdigest()
     self._private_socket.send(pin.encode())
     error = self._private_socket.recv(1024).decode('utf-8')
-    
-    if (not bool(error)):
+
+    if (error == '0'):
       c_amount = input("Amount: ")
-      self._private_socket.send(f'{c_amount.encode()}')
+      self._private_socket.send(f'{c_amount}'.encode())
       print(self._private_socket.recv(1024).decode('utf-8'))
       print(self._private_socket.recv(1024).decode('utf-8'))
     else:
-      print("Invalid PIN.")    
+      print("Invalid PIN.")
 
   def cash_deposit_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
+    print(self.ref_port)
     self._private_socket.connect((self.host_ip, self.ref_port))
     s_account_no = input("Account No: ")
     s_amount = input("Amount: ")
