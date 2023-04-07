@@ -1,13 +1,13 @@
 from transactions import *
 
 createAccountsTable()
-db_connection.commit()
 
 names = ["Philip Rodgers", "Lorenzo Kim", "Jair Cain", "Rodolfo Ritter", "Kevin Berry"]
 address = ["Park Street, NY Upstate", "White House, Toronto", "Azerbaizan", "803, Adeilade", "London", "Denmark"]
 gender = ["M", "F", "M", "M", "M"]
 
 for i in zip(names, address, gender):
+  # print(i)
   insertInAccountsTable(i[0], i[1], i[2])
   db_connection.commit()
 

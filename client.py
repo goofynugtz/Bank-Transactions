@@ -4,8 +4,8 @@ from utils import *
 
 HOST_IP = '127.0.0.1'
 PORT = 3000
-ACCOUNT_NO = 81971036696
-CARD_NO = 5718189065467582
+ACCOUNT_NO = 53746709072
+CARD_NO = 2013181047073319
 ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
 CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
 
@@ -41,13 +41,15 @@ class client:
       self.cheque_client()
     if (user_input == "2"):
       self.atm_client()
+    if (user_input == "3"):
+      self.cash_deposit_client()
     print("Exiting.")
 
 
   def cheque_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
     self._private_socket.connect((self.host_ip, self.ref_port))
-    print("1. Issue a cheque.\n2. Claim cheque\n")
+    print("\n1. Issue a cheque.\n2. Claim cheque\n")
     user_input = input("[Choice]: ")
     
     # Cheque Issue
@@ -77,11 +79,20 @@ class client:
     self._private_socket.connect((self.host_ip, self.ref_port))
     card_dump = pickle.dumps(self.card)
     self._private_socket.send(card_dump)
-    c_amount = input("Amount: ")
+    c_amount = input("\nWithdrawal Amount: ")
     self._private_socket.send(f'{c_amount}'.encode())
     print(self._private_socket.recv(1024).decode('utf-8'))
     print(self._private_socket.recv(1024).decode('utf-8'))
 
+  def cash_deposit_client(self):
+    self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
+    self._private_socket.connect((self.host_ip, self.ref_port))
+    s_account_no = input("Account No: ")
+    s_amount = input("Amount: ")
+    deposit_slip = slip(s_account_no, s_amount)
+    slip_dump = pickle.dumps(deposit_slip)
+    self._private_socket.send(slip_dump)
+    print(self._private_socket.recv(1024).decode('utf-8'))
 
 
 if __name__ == "__main__":

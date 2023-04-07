@@ -10,7 +10,8 @@ def createAccountsTable():
     Balance bigint);
   """
   cursor.execute(sql)
-
+  db_connection.commit()
+  
 
 def insertInAccountsTable(name, address, gender):
   balance = 10000
@@ -20,6 +21,7 @@ def insertInAccountsTable(name, address, gender):
     INSERT INTO accounts VALUES ("{account_no}","{name}","{address}","{phone}","{gender}",{balance});
   """
   cursor.execute(sql)
+  db_connection.commit()
 
 
 def createCardsTable():
@@ -29,7 +31,7 @@ def createCardsTable():
     FOREIGN KEY (AccountNo) REFERENCES accounts(AccountNo));
   """
   cursor.execute(sql)
-
+  db_connection.commit()
 
 def insertInCardsTable(accountNo):
   card_number = generateRandomNumberOfSize(16)
@@ -37,6 +39,8 @@ def insertInCardsTable(accountNo):
     INSERT INTO cards VALUES ("{card_number}", "{accountNo}")
   """
   cursor.execute(sql)
+  db_connection.commit()
+
 
 def createChequesIssuedTable():
   sql = f"""
@@ -49,14 +53,14 @@ def createChequesIssuedTable():
     FOREIGN KEY (AccountNo) REFERENCES accounts(AccountNo));
   """
   cursor.execute(sql)
-
+  db_connection.commit()
 
 def issueCheque(cheque_no, amount, payer_ac):
   sql = f"""
     INSERT INTO cheques_issued VALUES ("{payer_ac}","{cheque_no}",{amount},"07-04-2023");
   """
   cursor.execute(sql)
-
+  db_connection.commit()
 
 def withdrawCheque(cheque_no, amount, account_no):
   sql = f"""
@@ -64,6 +68,7 @@ def withdrawCheque(cheque_no, amount, account_no):
     WHERE AccountNo="{account_no}" AND ChequeNo="{cheque_no}";
   """
   cursor.execute(sql)
+  db_connection.commit()
   withdraw(account_no, amount)
 
 
@@ -74,7 +79,7 @@ def withdraw(account_no, amount):
     WHERE AccountNo = "{account_no}";
   """
   cursor.execute(sql)
-
+  db_connection.commit()
 
 def deposit(account_no, amount):
   sql = f"""
@@ -83,4 +88,4 @@ def deposit(account_no, amount):
     WHERE AccountNo = "{account_no}";
   """
   cursor.execute(sql)
-
+  db_connection.commit()
