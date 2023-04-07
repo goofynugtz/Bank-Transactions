@@ -73,6 +73,9 @@ class cheque_server:
       withdraw(cheque.payer_ac, cheque.amount)
       # deposit(cheque.receiver, cheque.amount)
       db_connection.commit()
+      c.send(f'>> Cheque Claimed. Withdrawn amount {cheque.amount}.'.encode())
+    else:
+      c.send(f'[!] Invalid Cheque.'.encode())
 
   def run(self):
     while True:
