@@ -5,9 +5,9 @@ from utils import *
 
 HOST_IP = '127.0.0.1'
 PORT = 3000
-ACCOUNT_NO = 89671910745
-CARD_NO = 6773823143790094
-ACCOUNTHOLDERS_NAME = "Philip Rodgers"
+ACCOUNT_NO = 72270803044
+CARD_NO = 2962340605016183
+ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
 CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
 
 # ACCOUNT_NO = 94895520119
@@ -37,12 +37,11 @@ class client:
     user_input = input("[Choice]: ")
     self.server_socket.send(f'{user_input}'.encode())
     self.ref_port = int(self.server_socket.recv(1024).decode())
-    # self.server_socket.close()
     if (user_input == "1"):
       self.cheque_client()
-    if (user_input == "2"):
+    elif (user_input == "2"):
       self.atm_client()
-    if (user_input == "3"):
+    elif (user_input == "3"):
       self.cash_deposit_client()
     print("Exiting.")
 
@@ -72,7 +71,6 @@ class client:
       self._private_socket.send(user_input.encode())
       self._private_socket.send(cheque_dump)
       print(self._private_socket.recv(1024).decode('utf-8'))
-    # self._private_socket.close()
 
   def atm_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
@@ -94,7 +92,6 @@ class client:
 
   def cash_deposit_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
-    print(self.ref_port)
     self._private_socket.connect((self.host_ip, self.ref_port))
     s_account_no = input("Account No: ")
     s_amount = input("Amount: ")

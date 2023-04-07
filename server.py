@@ -34,10 +34,12 @@ class central_server:
     client_response = c.recv(1024).decode("utf-8")
     if (client_response == '1'):
       c.send(f'{CHQ_PORT}'.encode());
-    if (client_response == '2'):
+    elif (client_response == '2'):
       c.send(f'{ATM_PORT}'.encode());
-    if (client_response == '3'):
+    elif (client_response == '3'):
       c.send(f'{CSD_PORT}'.encode());
+    else :
+      c.send("0".encode());
     c.close()
 
   def run(self):
@@ -59,14 +61,11 @@ class cheque_server:
     print(f"[CHQ] >> Server [1] listeing @ PORT: {self.port}")
 
   def issue(self, c, cheque:cheque):
-    print("Cheque Issue")
     if (validateAccountNumber(cheque.payer_ac)):
       issueCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, payer_ac=cheque.payer_ac)
-      print('issued')
       c.send(f'{cheque.cheque_no}'.encode())
 
   def claim(self, c, cheque:cheque):
-    print("Cheque Claim")
     if (validateCheque(cheque)):
       withdrawCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, account_no=cheque.payer_ac)
       # deposit(cheque.receiver, cheque.amount)
@@ -79,7 +78,6 @@ class cheque_server:
       c, _ = self.server_socket.accept()
       self._connections.append(c)
       option = c.recv(1024).decode()
-      print(f"Option: {option}")
       cheque_dump = c.recv(1024)
       cheque = pickle.loads(cheque_dump)
       if (option == "1"):
@@ -104,7 +102,6 @@ class atm_server:
     card_dump = c.recv(1024)
     card = pickle.loads(card_dump)
     pin = c.recv(1024).decode()
-    print(card.card_no, pin)
     if (validateCard(card, pin)):
       c.send("0".encode())
       amount = c.recv(1024).decode("utf-8")
