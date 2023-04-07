@@ -27,9 +27,9 @@ class central_server:
     self.atm_server = atm_server(HOST_IP)
     atm_thread = t.Thread(target=self.atm_server.run)
     atm_thread.start()
-    self.cash_deposit_server = cash_deposit_server(HOST_IP)
-    cash_deposit_thread = t.Thread(target=self.cash_deposit_server.run)
-    cash_deposit_thread.start()
+    # self.cash_deposit_server = cash_deposit_server(HOST_IP)
+    # cash_deposit_thread = t.Thread(target=self.cash_deposit_server.run)
+    # cash_deposit_thread.start()
 
   def distributor(self, c, address):
     print('[CEN] [!] Connection request from:', address)
@@ -102,22 +102,27 @@ class atm_server:
     self._connections = []
     print(f"[ATM] >> Server [1] listeing @ PORT: {self.port}")
 
-  def withdrawAmount(self, c, card:card):
-    if (validateCard(card)):
+  def withdrawAmount(self, c):
+    card_dump = c.recv(1024)
+    card = pickle.loads(card_dump)
+    pin = c.recv(1024).decode() # TODO:
+    print(card.card_no, pin)
+    if (validateCard(card, pin)):
+      c.send("0".encode())
       amount = c.recv(1024).decode("utf-8")
       account_no = getAccountNumber(card)
       c.send(">> Processing Trasaction...".encode())
       withdraw(account_no, amount)
       balance = getAccountBalance(account_no)
-      c.send(f"\nBalance Left: {balance}".encode())
+      c.send(f"Balance Left: {balance}".encode())
+    else:
+      c.send("1".encode())
 
   def run(self):
     while True:
       c, _ = self.server_socket.accept()
       self._connections.append(c)
-      card_dump = c.recv(1024)
-      card = pickle.loads(card_dump)
-      thread = t.Thread(target=self.withdrawAmount, args=[c,card])
+      thread = t.Thread(target=self.withdrawAmount, args=[c])
       thread.start()
 
 

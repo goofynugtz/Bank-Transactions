@@ -1,3 +1,4 @@
+import hashlib
 import socket as s, pickle
 from data_types import *
 from utils import *
@@ -79,10 +80,18 @@ class client:
     self._private_socket.connect((self.host_ip, self.ref_port))
     card_dump = pickle.dumps(self.card)
     self._private_socket.send(card_dump)
-    c_amount = input("\nWithdrawal Amount: ")
-    self._private_socket.send(f'{c_amount}'.encode())
-    print(self._private_socket.recv(1024).decode('utf-8'))
-    print(self._private_socket.recv(1024).decode('utf-8'))
+    pin = input('Enter PIN: ')
+    pin = hashlib.sha256(pin.encode('utf-8')).hexdigest()
+    self._private_socket.send(pin.encode())
+    error = self._private_socket.recv(1024).decode('utf-8')
+    
+    if (not bool(error)):
+      c_amount = input("Amount: ")
+      self._private_socket.send(f'{c_amount.encode()}')
+      print(self._private_socket.recv(1024).decode('utf-8'))
+      print(self._private_socket.recv(1024).decode('utf-8'))
+    else:
+      print("Invalid PIN.")    
 
   def cash_deposit_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)

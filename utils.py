@@ -13,7 +13,7 @@ def generateRandomNumberOfSize(n):
 def validateAccountNumber(account_no):
   cursor.execute(f"SELECT AccountNo from accounts WHERE AccountNo='{account_no}'")
   data = cursor.fetchall()
-  return len(data) == 1;
+  return len(data) == 1
 
 
 def validateCheque(cheque: cheque):
@@ -24,13 +24,14 @@ def validateCheque(cheque: cheque):
     AND ChequeNo='{cheque.cheque_no}'
   """)
   data = cursor.fetchall()
-  return len(data) == 1;
+  return len(data) == 1
 
 
-def validateCard(card: card):
-  cursor.execute(f"SELECT CardNo from cards WHERE CardNo='{card.card_no}'")
+def validateCard(card: card, pin):
+  print(pin)
+  cursor.execute(f"SELECT CardNo from cards WHERE CardNo='{card.card_no}';")
   data = cursor.fetchall()
-  return len(data) == 1;
+  return len(data) == 1
 
 
 def getAccountNumber(card: card):
