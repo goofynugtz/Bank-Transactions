@@ -1,7 +1,7 @@
 import random, sqlite3 as db
 from models import *
 
-db_connection = db.connect("data.db", check_same_thread=False)
+db_connection = db.connect("database.db", check_same_thread=False)
 cursor = db_connection.cursor()
 
 def generateRandomNumberOfSize(n):

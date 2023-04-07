@@ -66,7 +66,6 @@ class cheque_server:
       c.send(f'{cheque.cheque_no}'.encode())
 
   def claim(self, c, cheque:cheque):
-    
     if (validateCheque(cheque)):
       if (validateTransactionAmount(cheque.payer_ac,cheque.amount)):
         withdrawCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, account_no=cheque.payer_ac)
