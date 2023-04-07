@@ -2,18 +2,21 @@ import hashlib
 import socket as s, pickle
 from models import *
 from utils import *
+import time
+import sys
 
 HOST_IP = '127.0.0.1'
 PORT = 3000
-# ACCOUNT_NO = 16070322068
-# CARD_NO = 2677489830294190
-# ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
-# CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
 
-ACCOUNT_NO = 27030146932
-CARD_NO = 6925424292792355
-ACCOUNTHOLDERS_NAME = "Rodolfo Ritter"
+ACCOUNT_NO = 43902648598
+CARD_NO = 6401128508191489
+ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
 CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
+
+# ACCOUNT_NO = 76372390228
+# CARD_NO = 3974973546780680
+# ACCOUNTHOLDERS_NAME = "Rodolfo Ritter"
+# CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
 
 class client:
   def __init__(
@@ -67,10 +70,10 @@ class client:
       c_amount = input("Amount: ")
       c_no = input("Enter Cheque No: ")
       chq = cheque(c_no, c_amount, c_payer_ac)
-      cheque_dump = pickle.dumps(chq)
       self._private_socket.send(user_input.encode())
-      self._private_socket.send(cheque_dump)
-      self._private_socket.send(f'{self.accountNumber}'.encode())
+      sender_dump = [chq, self.accountNumber]
+      sender_dump = pickle.dumps(sender_dump)
+      self._private_socket.send(sender_dump)
       print(self._private_socket.recv(1024).decode('utf-8'))
 
   def atm_client(self):

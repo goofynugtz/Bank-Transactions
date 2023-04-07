@@ -58,7 +58,7 @@ def createTransactionsTable():
   sql = f"""
     CREATE TABLE transactions(
       TransactionId integer PRIMARY KEY AUTOINCREMENT, 
-      FromAccount varchar(11) NOT NULL,
+      FromAccount varchar(11) NULL,
       ToAccount varchar(11) NULL,
       Amount DECIMAL(3) NOT NULL,
       Mode varchar(3) NOT NULL,
@@ -74,9 +74,19 @@ def createTransactionsTable():
   # db_connection.commit()
 
 def addTransaction(from_account, to_account, amount, mode="ATM"):
-  sql = f"""
-    INSERT INTO transactions VALUES ("{from_account}, "{to_account}", {amount}, "{mode}");
-  """
+  sql = None
+  if (to_account is None):
+    sql = f"""
+      INSERT INTO transactions (FromAccount, Amount, Mode) VALUES ("{from_account}", {amount}, "{mode}");
+    """
+  elif (from_account is None):
+    sql = f"""
+      INSERT INTO transactions (ToAccount, Amount, Mode) VALUES ("{to_account}", {amount}, "{mode}");
+    """
+  else:
+    sql = f"""
+      INSERT INTO transactions (FromAccount, ToAccount, Amount, Mode) VALUES("{from_account}", "{to_account}", {amount}, "{mode}");
+    """
   cursor.execute(sql)
   db_connection.commit()
 

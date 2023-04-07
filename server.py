@@ -6,7 +6,7 @@ from utils import *
 CEN_PORT = 3000
 CHQ_PORT = 3001
 ATM_PORT = 3002
-CSD_PORT = 3003
+CSH_PORT = 3003
 
 HOST_IP = '127.0.0.1'
 
@@ -37,7 +37,7 @@ class central_server:
     elif (client_response == '2'):
       c.send(f'{ATM_PORT}'.encode());
     elif (client_response == '3'):
-      c.send(f'{CSD_PORT}'.encode());
+      c.send(f'{CSH_PORT}'.encode());
     else :
       c.send("0".encode());
     c.close()
@@ -70,7 +70,8 @@ class cheque_server:
       if(validateAccountNumber(payee_ac)):
         if (validateTransactionAmount(cheque.payer_ac,cheque.amount)):
           withdrawCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, account_no=cheque.payer_ac)
-          deposit(payee_ac,cheque.amount)
+          deposit(payee_ac, cheque.amount)
+          addTransaction(cheque.payer_ac, payee_ac, cheque.amount, "CHQ")
           c.send(f'>> Cheque Claimed. Transferred amount {cheque.amount}.'.encode())
         else:
           c.send(f'[!] Cheque Bounced.'.encode())
@@ -84,13 +85,20 @@ class cheque_server:
       c, _ = self.server_socket.accept()
       self._connections.append(c)
       option = c.recv(1024).decode()
-      cheque_dump = c.recv(1024)
-      cheque = pickle.loads(cheque_dump)
+      print(option)
       if (option == "1"):
+        cheque_dump = c.recv(1024)
+        cheque = pickle.loads(cheque_dump)
+        # print(cheque.cheque_no)
+        # print(cheque.amount)
+        # print(cheque_dump)
         thread = t.Thread(target=self.issue, args=[c,cheque])
         thread.start()
       elif (option == "2"):
-        payee_ac = c.recv(1024).decode()
+        cheque_dump = c.recv(1024)
+        cheque, payee_ac = pickle.loads(cheque_dump)
+        payee_ac = str(payee_ac)
+        print(payee_ac)
         thread = t.Thread(target=self.claim, args=[c,cheque, payee_ac])
         thread.start()
 
@@ -116,6 +124,7 @@ class atm_server:
       if (validateTransactionAmount(account_no,amount)):
         c.send(">> Processing Transaction...".encode())
         withdraw(account_no, amount)
+        addTransaction(account_no, None, amount, mode="ATM")
       else:
         c.send("[!] Insufficient Balance".encode())
       
@@ -133,18 +142,19 @@ class atm_server:
 
 
 class cash_deposit_server:
-  def __init__(self, host_ip=HOST_IP, port=CSD_PORT):
+  def __init__(self, host_ip=HOST_IP, port=CSH_PORT):
     self.host_ip = host_ip
     self.port = port
     self.server_socket = s.socket(s.AF_INET,s.SOCK_STREAM)
     self.server_socket.bind((self.host_ip, self.port))
     self.server_socket.listen(5)
     self._connections = []
-    print(f"[CSD] >> Server [1] listening @ PORT: {self.port}")
+    print(f"[CSH] >> Server [1] listening @ PORT: {self.port}")
 
   def depositAmount(self, c, slip:slip):
     if (validateAccountNumber(slip.account_no)):
       deposit(slip.account_no, slip.amount)
+      addTransaction(None, slip.account_no, slip.amount, "CSH")
       c.send(f"\nSuccessfully Deposited".encode())
     else:
       c.send(f"\nInvalid Details.".encode())
