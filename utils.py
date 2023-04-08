@@ -25,7 +25,7 @@ def validateCheque(cheque: cheque):
   return len(data) == 1
 
 def validateCard(card: card, pin):
-  cursor.execute(f"SELECT CardNo from cards WHERE CardNo='{card.card_no}';")
+  cursor.execute(f"SELECT CardNo from cards WHERE CardNo='{card.card_no}' AND Pin='{pin}';")
   data = cursor.fetchall()
   return len(data) == 1
 

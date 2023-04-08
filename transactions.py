@@ -120,6 +120,14 @@ def withdrawCheque(cheque_no, amount, account_no):
   db_connection.commit()
   withdraw(account_no, amount)
 
+def bounceCheque(cheque_no, account_no):
+  sql = f"""
+    DELETE FROM cheques_issued 
+    WHERE AccountNo="{account_no}" AND ChequeNo="{cheque_no}";
+  """
+  cursor.execute(sql)
+  db_connection.commit()
+
 def withdraw(account_no, amount):
   sql = f"""
     UPDATE accounts 

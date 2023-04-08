@@ -1,4 +1,4 @@
-import socket as s, threading as t, sqlite3 as db, pickle
+import socket as s, threading as t, pickle
 from models import *
 from transactions import *
 from utils import *
@@ -30,17 +30,18 @@ class central_server:
     cash_deposit_thread.start()
 
   def distributor(self, c, address):
-    print('[CEN] [!] Connection request from:', address)
-    client_response = c.recv(1024).decode("utf-8")
-    if (client_response == '1'):
-      c.send(f'{CHQ_PORT}'.encode());
-    elif (client_response == '2'):
-      c.send(f'{ATM_PORT}'.encode());
-    elif (client_response == '3'):
-      c.send(f'{CSH_PORT}'.encode());
-    else :
-      c.send("0".encode());
-    c.close()
+    while(True):
+      print('[CEN] [!] Connection request from:', address)
+      client_response = c.recv(1024).decode("utf-8")
+      if (client_response == '1'):
+        c.send(f'{CHQ_PORT}'.encode());
+      elif (client_response == '2'):
+        c.send(f'{ATM_PORT}'.encode());
+      elif (client_response == '3'):
+        c.send(f'{CSH_PORT}'.encode());
+      else:
+        c.send("0".encode());
+      # c.close()
 
   def run(self):
     while True:
@@ -74,6 +75,7 @@ class cheque_server:
           addTransaction(cheque.payer_ac, payee_ac, cheque.amount, "CHQ")
           c.send(f'>> Cheque Claimed. Transferred amount {cheque.amount}.'.encode())
         else:
+          bounceCheque(cheque.cheque_no, cheque.payer_ac)
           c.send(f'[!] Cheque Bounced.'.encode())
       else:
         c.send(f'[!] Invalid Payee A/C Number.'.encode())
@@ -85,20 +87,15 @@ class cheque_server:
       c, _ = self.server_socket.accept()
       self._connections.append(c)
       option = c.recv(1024).decode()
-      print(option)
       if (option == "1"):
         cheque_dump = c.recv(1024)
         cheque = pickle.loads(cheque_dump)
-        # print(cheque.cheque_no)
-        # print(cheque.amount)
-        # print(cheque_dump)
         thread = t.Thread(target=self.issue, args=[c,cheque])
         thread.start()
       elif (option == "2"):
         cheque_dump = c.recv(1024)
         cheque, payee_ac = pickle.loads(cheque_dump)
         payee_ac = str(payee_ac)
-        print(payee_ac)
         thread = t.Thread(target=self.claim, args=[c,cheque, payee_ac])
         thread.start()
 
@@ -127,7 +124,6 @@ class atm_server:
         addTransaction(account_no, None, amount, mode="ATM")
       else:
         c.send("[!] Insufficient Balance".encode())
-      
       balance = getAccountBalance(account_no)
       c.send(f"Balance Left: {balance}".encode())
     else:
@@ -151,13 +147,21 @@ class cash_deposit_server:
     self._connections = []
     print(f"[CSH] >> Server [1] listening @ PORT: {self.port}")
 
-  def depositAmount(self, c, slip:slip):
+  def processTransactionSlip(self, c, slip:slip):
     if (validateAccountNumber(slip.account_no)):
-      deposit(slip.account_no, slip.amount)
-      addTransaction(None, slip.account_no, slip.amount, "CSH")
-      c.send(f"\nSuccessfully Deposited".encode())
+      if (slip.method == "1"):
+        if (validateTransactionAmount(slip.account_no, slip.amount)):
+          withdraw(slip.account_no, slip.amount)
+          addTransaction(slip.account_no, None, slip.amount, "CSH")
+          c.send(f"\nSuccessfully Withdrawn {slip.amount}.".encode())
+        else:
+          c.send(f"\n[!] Insufficient Balance.".encode())
+      elif (slip.method == "2"):
+        deposit(slip.account_no, slip.amount)
+        addTransaction(None, slip.account_no, slip.amount, "CSH")
+        c.send(f"\nSuccessfully Deposited {slip.amount}.".encode())
     else:
-      c.send(f"\nInvalid Details.".encode())
+      c.send(f"\n[!] Invalid Details.".encode())
 
   def run(self):
     while True:
@@ -165,7 +169,7 @@ class cash_deposit_server:
       self._connections.append(c)
       slip_dump = c.recv(1024)
       slip = pickle.loads(slip_dump)
-      thread = t.Thread(target=self.depositAmount, args=[c,slip])
+      thread = t.Thread(target=self.processTransactionSlip, args=[c,slip])
       thread.start()
 
 if __name__ == "__main__":

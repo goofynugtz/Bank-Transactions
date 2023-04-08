@@ -2,8 +2,8 @@ import hashlib
 import socket as s, pickle
 from models import *
 from utils import *
-import time
-import sys
+import os
+from colorama import Fore, Back, Style
 
 HOST_IP = '127.0.0.1'
 PORT = 3000
@@ -36,7 +36,7 @@ class client:
     self.ref_port = None
 
   def run(self):
-    print("Enter transaction method:\n1. Cheque\n2. ATM\n3. Cash Deposit\n0. Exit")
+    print("\n\nEnter transaction method:\n1. Cheque\n2. ATM\n3. Cash Deposit\n0. Exit")
     user_input = input("[Choice]: ")
     self.server_socket.send(f'{user_input}'.encode())
     self.ref_port = int(self.server_socket.recv(1024).decode())
@@ -46,7 +46,7 @@ class client:
       self.atm_client()
     elif (user_input == "3"):
       self.cash_deposit_client()
-    print("Exiting.")
+    # print("Exiting.")
 
   def cheque_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
@@ -81,25 +81,26 @@ class client:
     self._private_socket.connect((self.host_ip, self.ref_port))
     card_dump = pickle.dumps(self.card)
     self._private_socket.send(card_dump)
-    pin = input('Enter PIN: ')
+    pin = input('\nEnter PIN: ')
     pin = hashlib.sha256(pin.encode('utf-8')).hexdigest()
     self._private_socket.send(pin.encode())
     error = self._private_socket.recv(1024).decode('utf-8')
-
     if (error == '0'):
       c_amount = input("Amount: ")
       self._private_socket.send(f'{c_amount}'.encode())
       print(self._private_socket.recv(1024).decode('utf-8'))
       print(self._private_socket.recv(1024).decode('utf-8'))
     else:
-      print("Invalid PIN.")
+      print("[!] Invalid PIN.")
 
   def cash_deposit_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
     self._private_socket.connect((self.host_ip, self.ref_port))
-    s_account_no = input("Account No: ")
+    s_account_no = input("\nAccount No: ")
     s_amount = input("Amount: ")
-    deposit_slip = slip(s_account_no, s_amount)
+    print("\n1. Withdrawal\n2. Deposit")
+    s_method = input("[Choice]: ")
+    deposit_slip = slip(s_account_no, s_amount, s_method)
     slip_dump = pickle.dumps(deposit_slip)
     self._private_socket.send(slip_dump)
     print(self._private_socket.recv(1024).decode('utf-8'))
@@ -107,4 +108,5 @@ class client:
 
 if __name__ == "__main__":
   client = client(HOST_IP, PORT, ACCOUNT_NO, ACCOUNTHOLDERS_NAME, CARD_1)
-  client.run()
+  while(True):
+    client.run()
