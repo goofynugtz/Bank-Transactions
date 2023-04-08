@@ -1,24 +1,71 @@
-The central server communicates with
-1. Cheque Managing Server
-2. ATM Managing Server
+###### Computer Networks Laboratory  
+# CSS652 Lab Final Assignment - Bank Transactions
 
-### Cheque Managing Server
-- Cheque is used to withdraw money. Therefore, it has only the account number where it's withdrawn from.
-  - Client's A/C No. is "TO" field
-  - A/C No. on cheque is "FROM" field
-- Fields:
-  1. Date (Validity Check: 6 months)
-  2. Reciever's Name === Client's A/C Name
-  3. Amount
-  4. Cheque Number
-  5. MICR Code
-  6. Payers A/C Number
+1. Initialize the database first by 
+```bash
+python init.py
+```
+2. Start server
+```bash
+python server.py
+```
+3. Run (multiple) client application
+```bash
+python client.py
+```
+<hr>
 
-### ATM Managing Server (INPUT: Card Number, AmountWithdrawn)
-- Deduces the amount from account of Card Number.
-  - Accepts Cards
-- Fields:
-  - Card Number
-  - Expiry
-  - Card Holder's Name
+The central server on port `3000` redirects communication with
+<table>
+  <tbody>
+    <tr>
+      <td>Cheque Managing Server</td>
+      <td>3001</td>
+    </tr>
+    <tr>
+      <td>ATM Managing Server</td>
+      <td>3002</td>
+    </tr>
+    <tr>
+      <td>Cash Servers</td>
+      <td>3003</td>
+    </tr>
+  </tbody>
+</table> 
 
+### <u>Cheque Managing Server</u>
+Cheque is used to transfer money to other account. When a cheque is issued by a client, it makes an entry in the `issued_cheques` table. That cheque can be claimed by any person having an account. 
+
+### <u>ATM Managing Server</u>
+Withdraws the amount directly from account of Card Number. 
+
+
+### <u>Cash Server</u>
+A transaction can be processed with account no 
+
+```mermaid
+classDiagram
+class Cheque{
+  + String payerAccountNumber
+  + Decimal amount
+  + String chequeNo 
+}
+class Card{
+  + String cardNo
+  + String cardholdersName 
+}
+class TransactionSlip{
+  + String accountNo
+  + Decimal amount 
+  + Choice method : [Withdrwal, Deposit] 
+}
+```
+
+```mermaid
+
+erDiagram
+  CENTRAL ||--|| ATM : place
+  CENTRAL ||--|| CHEQUE : contains
+  CENTRAL ||--|| CASH : contains
+  
+```

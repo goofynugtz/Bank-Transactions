@@ -25,8 +25,8 @@ class central_server:
     self.atm_server = atm_server(HOST_IP)
     atm_thread = t.Thread(target=self.atm_server.run)
     atm_thread.start()
-    self.cash_deposit_server = cash_deposit_server(HOST_IP)
-    cash_deposit_thread = t.Thread(target=self.cash_deposit_server.run)
+    self.cash_server = cash_server(HOST_IP)
+    cash_deposit_thread = t.Thread(target=self.cash_server.run)
     cash_deposit_thread.start()
 
   def distributor(self, c, address):
@@ -137,7 +137,7 @@ class atm_server:
       thread.start()
 
 
-class cash_deposit_server:
+class cash_server:
   def __init__(self, host_ip=HOST_IP, port=CSH_PORT):
     self.host_ip = host_ip
     self.port = port

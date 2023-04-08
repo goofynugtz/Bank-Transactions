@@ -2,8 +2,6 @@ import hashlib
 import socket as s, pickle
 from models import *
 from utils import *
-import os
-from colorama import Fore, Back, Style
 
 HOST_IP = '127.0.0.1'
 PORT = 3000
@@ -45,7 +43,7 @@ class client:
     elif (user_input == "2"):
       self.atm_client()
     elif (user_input == "3"):
-      self.cash_deposit_client()
+      self.cash_client()
     # print("Exiting.")
 
   def cheque_client(self):
@@ -93,7 +91,7 @@ class client:
     else:
       print("[!] Invalid PIN.")
 
-  def cash_deposit_client(self):
+  def cash_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
     self._private_socket.connect((self.host_ip, self.ref_port))
     s_account_no = input("\nAccount No: ")
