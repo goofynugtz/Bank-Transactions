@@ -34,11 +34,38 @@ class central_server:
       print('[CEN] [!] Connection request from:', address)
       client_response = c.recv(1024).decode("utf-8")
       if (client_response == '1'):
-        c.send(f'{CHQ_PORT}'.encode());
+        self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
+        self._private_socket.connect((self.host_ip, CHQ_PORT))
+        option = c.recv(1024).decode()
+        if (option == "1"):
+          cheque_dump = c.recv(1024)
+          self._private_socket.send(option.encode())
+          self._private_socket.send(cheque_dump)
+          c.send(self._private_socket.recv(1024))
+
+        elif (option == "2"):
+          cheque_dump = c.recv(1024)
+          self._private_socket.send(option.encode())
+          self._private_socket.send(cheque_dump)
+          c.send(self._private_socket.recv(1024))
+        
       elif (client_response == '2'):
-        c.send(f'{ATM_PORT}'.encode());
+        self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
+        self._private_socket.connect((self.host_ip, ATM_PORT))
+        self._private_socket.send(c.recv(1024))
+        self._private_socket.send(c.recv(1024))
+        error = self._private_socket.recv(1024)
+        c.send(error)
+        if (error.decode('utf-8') == "0"):
+          self._private_socket.send(c.recv(1024))
+          c.send(self._private_socket.recv(1024))
+          c.send(self._private_socket.recv(1024))
+
       elif (client_response == '3'):
-        c.send(f'{CSH_PORT}'.encode());
+        self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
+        self._private_socket.connect((self.host_ip, CSH_PORT))
+        self._private_socket.send(c.recv(1024))
+        c.send(self._private_socket.recv(1024))
       else:
         c.send("0".encode());
         c.close()
@@ -64,14 +91,16 @@ class cheque_server:
 
   def issue(self, c, cheque:cheque):
     if (validateAccountNumber(cheque.payer_ac)):
-      issueCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, payer_ac=cheque.payer_ac)
+      issueCheque(cheque_no=cheque.cheque_no, 
+                  amount=cheque.amount, payer_ac=cheque.payer_ac)
       c.send(f'{cheque.cheque_no}'.encode())
 
   def claim(self, c, cheque:cheque, payee_ac):
     if (validateCheque(cheque)):
       if(validateAccountNumber(payee_ac)):
         if (validateTransactionAmount(cheque.payer_ac,cheque.amount)):
-          withdrawCheque(cheque_no=cheque.cheque_no, amount=cheque.amount, account_no=cheque.payer_ac)
+          withdrawCheque(cheque_no=cheque.cheque_no, 
+                         amount=cheque.amount, account_no=cheque.payer_ac)
           deposit(payee_ac, cheque.amount)
           addTransaction(cheque.payer_ac, payee_ac, cheque.amount, "CHQ")
           c.send(f'>> Cheque Claimed. Transferred amount {cheque.amount}.'.encode())
@@ -91,6 +120,7 @@ class cheque_server:
       if (option == "1"):
         cheque_dump = c.recv(1024)
         cheque = pickle.loads(cheque_dump)
+
         thread = t.Thread(target=self.issue, args=[c,cheque])
         thread.start()
       elif (option == "2"):

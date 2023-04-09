@@ -3,3 +3,4 @@ test
 __pycache__
 *.docx
 *.tmp
+*.pdf
