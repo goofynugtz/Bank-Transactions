@@ -35,7 +35,7 @@ class client:
     self.ref_port = None
 
   def run(self):
-    print("\n\nEnter transaction method:\n1. Cheque\n2. ATM\n3. Cash Deposit\n0. Exit")
+    print("\n\nEnter transaction method:\n1. Cheque\n2. ATM\n3. Cash Withdrawal/Deposit\n0. Exit")
     user_input = input("[Choice]: ")
     self.server_socket.send(f'{user_input}'.encode())
     self.ref_port = int(self.server_socket.recv(1024).decode())
@@ -98,7 +98,8 @@ class client:
   def cash_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
     self._private_socket.connect((self.host_ip, self.ref_port))
-    s_account_no = input("\nAccount No: ")
+    print("\nEnter Transaction Slip details:")
+    s_account_no = input("Account No: ")
     s_amount = input("Amount: ")
     print("\n1. Withdrawal\n2. Deposit")
     s_method = input("[Choice]: ")
