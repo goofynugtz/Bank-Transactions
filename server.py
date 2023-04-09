@@ -41,7 +41,8 @@ class central_server:
         c.send(f'{CSH_PORT}'.encode());
       else:
         c.send("0".encode());
-      # c.close()
+        c.close()
+        return;
 
   def run(self):
     while True:

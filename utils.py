@@ -39,7 +39,14 @@ def getAccountBalance(account_no):
   data = cursor.fetchall()
   return data[0][0]
 
-def validateTransactionAmount(account_no,amount):
+def validateTransactionAmount(account_no, amount):
   cursor.execute(f"SELECT balance from accounts WHERE AccountNo='{account_no}'")
   balance = cursor.fetchall()[0][0]
   return float(balance) >= float(amount)
+
+def validateUserCredentials(account_no, accountholders_name, card: card):
+  cursor.execute(f"SELECT * from accounts WHERE AccountNo='{account_no}' AND Name='{accountholders_name}';")
+  accounts = cursor.fetchall()
+  cursor.execute(f"SELECT * from cards WHERE AccountNo='{account_no}' AND CardNo='{card.card_no}';")
+  cards = cursor.fetchall()
+  return (len(accounts) == 1 and len(cards) == 1)

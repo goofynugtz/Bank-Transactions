@@ -106,7 +106,7 @@ def createChequesIssuedTable():
 
 def issueCheque(cheque_no, amount, payer_ac):
   sql = f"""
-    INSERT INTO cheques_issued VALUES ("{payer_ac}","{cheque_no}",{amount},"07-04-2023");
+    INSERT INTO cheques_issued (AccountNo, ChequeNo, Amount) VALUES ("{payer_ac}","{cheque_no}",{amount});
   """
   cursor.execute(sql)
   db_connection.commit()

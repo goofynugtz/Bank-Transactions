@@ -6,10 +6,10 @@ from utils import *
 HOST_IP = '127.0.0.1'
 PORT = 3000
 
-ACCOUNT_NO = 43902648598
-CARD_NO = 6401128508191489
-ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
-CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
+# ACCOUNT_NO = 43902648598
+# CARD_NO = 6401128508191489
+# ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
+# CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
 
 # ACCOUNT_NO = 76372390228
 # CARD_NO = 3974973546780680
@@ -18,11 +18,12 @@ CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
 
 class client:
   def __init__(
-      self, host_ip=HOST_IP, 
+      self, 
+      accountNumber, 
+      accountHoldersName,
+      card,
+      host_ip=HOST_IP, 
       port=PORT, 
-      accountNumber=ACCOUNT_NO, 
-      accountHoldersName=ACCOUNTHOLDERS_NAME,
-      card=CARD_1
     ):
     self.host_ip = host_ip
     self.port = port
@@ -44,7 +45,10 @@ class client:
       self.atm_client()
     elif (user_input == "3"):
       self.cash_client()
-    # print("Exiting.")
+    else:
+      print("Exiting.")
+      return 0
+    return 1
 
   def cheque_client(self):
     self._private_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
@@ -105,6 +109,19 @@ class client:
 
 
 if __name__ == "__main__":
-  client = client(HOST_IP, PORT, ACCOUNT_NO, ACCOUNTHOLDERS_NAME, CARD_1)
-  while(True):
-    client.run()
+  accountNo = input("\nEnter A/C No: ")
+  accountHoldersName = input("Enter A/C Holder's Name: ")
+  cardNo = input("Enter Card No: ")
+  debitCard = card(cardNo, accountHoldersName)
+  print(">> Verifying...")
+  
+  if validateUserCredentials(accountNo, accountHoldersName, debitCard):
+    print("Successfully Verified.")
+    c = client(accountNo, accountHoldersName, debitCard, HOST_IP, PORT)
+    while(True):
+      exitFlag = c.run()
+      if (exitFlag == 0): 
+        break
+  else:
+    print("[!] Invalid User Credentials.")
+  
