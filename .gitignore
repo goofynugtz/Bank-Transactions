@@ -1,6 +1,8 @@
 test
 *.db
+*.sqlite
 __pycache__
 *.docx
 *.tmp
 *.pdf
+*.png

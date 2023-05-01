@@ -6,16 +6,6 @@ from utils import *
 HOST_IP = '127.0.0.1'
 PORT = 3000
 
-# ACCOUNT_NO = 43902648598
-# CARD_NO = 6401128508191489
-# ACCOUNTHOLDERS_NAME = "Lorenzo Kim"
-# CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
-
-# ACCOUNT_NO = 76372390228
-# CARD_NO = 3974973546780680
-# ACCOUNTHOLDERS_NAME = "Rodolfo Ritter"
-# CARD_1 = card(CARD_NO, ACCOUNTHOLDERS_NAME)
-
 class client:
   def __init__(
       self, 
@@ -40,7 +30,6 @@ class client:
     """)
     user_input = input("[Choice]: ")
     self.server_socket.send(f'{user_input}'.encode())
-    # self.ref_port = int(self.server_socket.recv(1024).decode())
     if (user_input == "1"):
       self.cheque_client()
     elif (user_input == "2"):
@@ -53,8 +42,6 @@ class client:
     return 1
 
   def cheque_client(self):
-    # self.server_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
-    # self.server_socket.connect((self.host_ip, self.ref_port))
     print("\n1. Issue a cheque.\n2. Claim cheque\n")
     user_input = input("[Choice]: ")
     
@@ -82,8 +69,6 @@ class client:
       print(self.server_socket.recv(1024).decode('utf-8'))
 
   def atm_client(self):
-    # self.server_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
-    # self.server_socket.connect((self.host_ip, self.ref_port))
     card_dump = pickle.dumps(self.card)
     self.server_socket.send(card_dump)
     pin = input('\nEnter PIN: ')
@@ -99,8 +84,6 @@ class client:
       print("[!] Invalid PIN.")
 
   def cash_client(self):
-    # self.server_socket = s.socket(s.AF_INET, s.SOCK_STREAM)
-    # self.server_socket.connect((self.host_ip, self.ref_port))
     print("\nEnter Transaction Slip details:")
     s_account_no = input("Account No: ")
     s_amount = input("Amount: ")
@@ -128,4 +111,3 @@ if __name__ == "__main__":
         break
   else:
     print("[!] Invalid User Credentials.")
-  
